@@ -8,6 +8,11 @@ var sensorObj = require('jsupm_lsm9ds0');
 // xm addr 1d)
 var sensor = new sensorObj.LSM9DS0();
 
+var speed = 30;//milliseconds
+
+
+
+
 // Initialize the device with default values
 sensor.init();
 
@@ -16,8 +21,45 @@ var y = new sensorObj.new_floatp();
 var z = new sensorObj.new_floatp();
 
 
+var total_x = new sensorObj.new_floatp();
+var avg_x = new sensorObj.new_floatp();
+
+var reading_count = 0
+
+
 
 console.log('EDISON ACCELEROMETER Started: ' + Date());
+
+var currentX; 
+var currentY; 
+var currentZ; 
+
+var highestX = 0; 
+var highestY = 0; 
+var highestZ = 0;
+
+var calibrateX = 0; 
+var calibrateY = 0; 
+var calibrateZ = 0;
+
+
+function intitalizeReadings(){
+    sensor.update();
+    sensor.getAccelerometer(x, y, z);
+    currentX = sensorObj.floatp_value(x);
+    currentY = sensorObj.floatp_value(y);
+    currentZ = sensorObj.floatp_value(z);
+    
+    
+    calibrateX = currentX; 
+    calibrateY = currentY; 
+    calibrateZ = currentZ;
+    
+    console.log("INITIALIZED READINGS");
+}
+
+intitalizeReadings();
+
 
 
 
@@ -27,9 +69,41 @@ setInterval(function()
     sensor.update();
     
     sensor.getAccelerometer(x, y, z);
-    console.log("AX: %d   \tAY: %d \tAZ: %d",sensorObj.floatp_value(x),sensorObj.floatp_value(y),sensorObj.floatp_value(z));
+    
+    reading_count++;
+    
+    //get readings from sensor, adjust with the calibrate numbers
+    currentX = sensorObj.floatp_value(x) - calibrateX;
+    currentY = sensorObj.floatp_value(y) - calibrateY;
+    currentZ = sensorObj.floatp_value(z) - calibrateZ;
+    
+    //if the absoulte is greater than the max, it is the max
+    if(Math.abs(currentX) > highestX){highestX = Math.abs(currentX);}
+    if(Math.abs(currentY) > highestY){highestY = Math.abs(currentY);}  
+    if(Math.abs(currentZ) > highestZ){highestZ = Math.abs(currentZ);}
+    
+    
+    //console.log("AX: %d   \tAY: %d  \tAZ: %d   \tMaxX: %d   \tMaxY: %d  \tMaxZ: %d",currentX,currentY,currentZ,highestX,highestY,highestZ);
 
-}, 15);
+    console.log("MaxX: %d   \tMaxY: %d  \tMaxZ: %d  \tloop: %d",highestX,highestY,highestZ,reading_count);
+    
+    
+    
+    if(reading_count%5000==0){
+        highestX = 0; 
+        highestY = 0; 
+        highestZ = 0;
+
+    }
+    
+    
+    
+    
+    
+    //console.log(total_x);
+    
+
+}, speed);
 
 // exit on ^C
 process.on('SIGINT', function()
