@@ -91,11 +91,11 @@ setInterval(function()
     //console.log("AX: %d   \tAY: %d  \tAZ: %d   \tMaxX: %d   \tMaxY: %d  \tMaxZ: %d",currentX,currentY,currentZ,highestX,highestY,highestZ);
 
     //MAX READINGS
-    console.log("MaxX: %d   \tMaxY: %d  \tMaxZ: %d  \tloop: %d",highestX,highestY,highestZ,reading_count);
+    console.log("MaxX: %d   \tMaxY: %d  \tMaxZ: %d  \tloop: %d \t indicators: %s-%s-%s",highestX,highestY,highestZ,reading_count, highestX>1,highestY>1,highestZ>1);
     
     
     
-    if(highestZ>1){
+    if(highestX>1||highestY>1||highestZ>1){
         if(concussionIndicated==false){
             ConcussionLed.write(1);
             concussionIndicated = true;
