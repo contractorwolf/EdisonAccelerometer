@@ -4,6 +4,8 @@
 //Type Node.js Here :)
 
 var sensorObj = require('jsupm_lsm9ds0');
+var querystring = require('querystring');
+var http = require('http');
 
 var mraa = require('mraa'); //require mraa
 console.log('MRAA Version: ' + mraa.getVersion()); //write the mraa version to the Intel XDK console
@@ -35,8 +37,10 @@ var calibrateZ = 0;
 
 var reading_count = 0
 
-var speed = 30;//milliseconds
+var speed = 20;//milliseconds
 var resetCount = 1000;
+var concussionThreshold = 2;//2 times gravity =  2g, a concussion can happen at ~30-50g
+var deviceSerialNumber = "fzed439d00tom501"
 
 
 console.log('EdisonAccelorometer Started: ' + Date());
@@ -63,6 +67,42 @@ function intitalizeReadings(){
     
     console.log("INITIALIZED READINGS");
 }
+
+function sendData(x,y,z,threshold){
+
+
+    var data = querystring.stringify({
+          deviceSerialNumber:deviceSerialNumber ,
+          measurementX: x,
+          measurementY: y,
+          meausrementZ: z,
+          notes: "",
+          threshold: threshold
+    });
+
+    var options = {
+        host: '192.168.1.142',
+        port: 4242,
+        path: '/addimpactvector',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(data)
+        }
+    };
+
+    var req = http.request(options, function(res) {
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log("body: " + chunk);
+        });
+    });
+
+    req.write(data);
+    req.end();
+}
+
+
 
 intitalizeReadings();
 
@@ -91,16 +131,20 @@ setInterval(function()
     //console.log("AX: %d   \tAY: %d  \tAZ: %d   \tMaxX: %d   \tMaxY: %d  \tMaxZ: %d",currentX,currentY,currentZ,highestX,highestY,highestZ);
 
     //MAX READINGS
-    console.log("MaxX: %d   \tMaxY: %d  \tMaxZ: %d  \tloop: %d \t indicators: %s-%s-%s",highestX,highestY,highestZ,reading_count, highestX>1,highestY>1,highestZ>1);
+    console.log("MaxX: %d   \tMaxY: %d  \tMaxZ: %d  \tloop: %d \t indicators: %s-%s-%s \tthreshold: %d \ttime: %s",highestX,highestY,highestZ,reading_count, highestX>concussionThreshold,highestY>concussionThreshold,highestZ>concussionThreshold, concussionThreshold,Date());
     
     
     
-    if(highestX>1||highestY>1||highestZ>1){
+    if(highestX>concussionThreshold||highestY>concussionThreshold||highestZ>concussionThreshold){
         if(concussionIndicated==false){
             ConcussionLed.write(1);
             concussionIndicated = true;
-            console.log("CONCUSSION INDICATED");
+            console.log("CONCUSSION INDICATED, " + concussionThreshold + "g exceeded");
+            
+            sendData(highestX,highestY,highestZ,concussionThreshold)
+            
             reading_count = 1;
+            
         }
     }
     
@@ -114,6 +158,7 @@ setInterval(function()
         concussionIndicated = false;
         ConcussionLed.write(0); 
         console.log("RESET");
+        reading_count = 1;
     }
     
     
