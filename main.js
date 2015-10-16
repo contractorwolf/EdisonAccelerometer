@@ -37,7 +37,7 @@ var calibrateZ = 0;
 
 var reading_count = 0
 
-var speed = 20;//milliseconds
+var speed = 1;//milliseconds
 var resetCount = 1000;
 var concussionThreshold = 2;//2 times gravity =  2g, a concussion can happen at ~30-50g
 var deviceSerialNumber = "fzed439d00tom501"
@@ -45,12 +45,19 @@ var deviceSerialNumber = "fzed439d00tom501"
 
 console.log('EdisonAccelorometer Started: ' + Date());
 
+var impactDateTime;
+var xSurpass = false;
+var ySurpass = false;
+var zSurpass = false;
 
 var ConcussionLed = new mraa.Gpio(31); //LED hooked up to digital pin 13 (or built in pin on Intel Galileo Gen2 as well as Intel Edison)
 ConcussionLed.dir(mraa.DIR_OUT); //set the gpio direction to output
 ConcussionLed.write(0); 
 
-var concussionIndicated = false;
+//var concussionIndicated = false;
+
+var outputTemplate = "CurrentX: %d   \tCurrentY: %d  \tCurrentZ: %d  \tloop: %d \t status: %s-%s-%s \tthreshold: %d \ttime: %s";
+
  
 
 function intitalizeReadings(){
@@ -67,8 +74,9 @@ function intitalizeReadings(){
     
     console.log("INITIALIZED READINGS");
 }
+intitalizeReadings();
 
-function sendData(x,y,z,threshold){
+function sendData(x,y,z,threshold, impactDateTime){
 
 
     var data = querystring.stringify({
@@ -77,7 +85,8 @@ function sendData(x,y,z,threshold){
           measurementY: y,
           meausrementZ: z,
           notes: "",
-          threshold: threshold
+          threshold: threshold,
+          impactDateTime: impactDateTime
     });
 
     var options = {
@@ -104,9 +113,6 @@ function sendData(x,y,z,threshold){
 
 
 
-intitalizeReadings();
-
-
 // Output data every half second until interrupted
 setInterval(function()
 {
@@ -121,52 +127,30 @@ setInterval(function()
     currentY = sensorObj.floatp_value(y) - calibrateY;
     currentZ = sensorObj.floatp_value(z) - calibrateZ;
     
-    //if the absoulte is greater than the max, it is the max
-    if(Math.abs(currentX) > highestX){highestX = Math.abs(currentX);}
-    if(Math.abs(currentY) > highestY){highestY = Math.abs(currentY);}  
-    if(Math.abs(currentZ) > highestZ){highestZ = Math.abs(currentZ);}
     
+    xSurpass = currentX>concussionThreshold;
+    ySurpass = currentY>concussionThreshold;
+    zSurpass = currentZ>concussionThreshold;
     
-    //ALL READINGS
-    //console.log("AX: %d   \tAY: %d  \tAZ: %d   \tMaxX: %d   \tMaxY: %d  \tMaxZ: %d",currentX,currentY,currentZ,highestX,highestY,highestZ);
-
-    //MAX READINGS
-    console.log("MaxX: %d   \tMaxY: %d  \tMaxZ: %d  \tloop: %d \t indicators: %s-%s-%s \tthreshold: %d \ttime: %s",highestX,highestY,highestZ,reading_count, highestX>concussionThreshold,highestY>concussionThreshold,highestZ>concussionThreshold, concussionThreshold,Date());
+    impactDateTime = Date();
     
+    //log sensor data
+    console.log(outputTemplate,currentX,currentY,currentZ,reading_count, xSurpass, ySurpass, zSurpass, concussionThreshold,impactDateTime);
     
-    
-    if(highestX>concussionThreshold||highestY>concussionThreshold||highestZ>concussionThreshold){
-        if(concussionIndicated==false){
-            ConcussionLed.write(1);
-            concussionIndicated = true;
-            console.log("CONCUSSION INDICATED, " + concussionThreshold + "g exceeded");
-            
-            sendData(highestX,highestY,highestZ,concussionThreshold)
-            
-            reading_count = 1;
-            
-        }
-    }
-    
-    
-    //reset highest after 5000 loops
-    if(reading_count%resetCount==0){
-        highestX = 0; 
-        highestY = 0; 
-        highestZ = 0;
-        
-        concussionIndicated = false;
-        ConcussionLed.write(0); 
-        console.log("RESET");
+    //test for concussionjs
+    if(currentX>concussionThreshold||currentY>concussionThreshold||currentZ>concussionThreshold){
+        sendData(currentX,currentY,currentZ,concussionThreshold,impactDateTime);
+        console.log("CONCUSSION INDICATED,  %dg exceeded, turn on LED:  %s", concussionThreshold, impactDateTime);
+        ConcussionLed.write(1);
         reading_count = 1;
     }
-    
-    
-    
-    
-    
-    
 
+    //reset highest after 5000 loops
+    if(reading_count%resetCount==0){
+        ConcussionLed.write(0); 
+        console.log("RESET LED and Count");
+        reading_count = 1;
+    }
 }, speed);
 
 // exit on ^C
