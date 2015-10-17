@@ -37,7 +37,7 @@ var calibrateZ = 0;
 
 var reading_count = 0
 
-var speed = 1;//milliseconds
+var speed = 20;//milliseconds
 var resetCount = 1000;
 var concussionThreshold = 2;//2 times gravity =  2g, a concussion can happen at ~30-50g
 var deviceSerialNumber = "fzed439d00tom501"
@@ -134,11 +134,14 @@ setInterval(function()
     
     impactDateTime = Date();
     
-    //log sensor data
-    console.log(outputTemplate,currentX,currentY,currentZ,reading_count, xSurpass, ySurpass, zSurpass, concussionThreshold,impactDateTime);
+
     
     //test for concussionjs
     if(currentX>concussionThreshold||currentY>concussionThreshold||currentZ>concussionThreshold){
+        
+        //log sensor data
+        console.log(outputTemplate,currentX,currentY,currentZ,reading_count, xSurpass, ySurpass, zSurpass, concussionThreshold,impactDateTime);
+        
         sendData(currentX,currentY,currentZ,concussionThreshold,impactDateTime);
         console.log("CONCUSSION INDICATED,  %dg exceeded, turn on LED:  %s", concussionThreshold, impactDateTime);
         ConcussionLed.write(1);
