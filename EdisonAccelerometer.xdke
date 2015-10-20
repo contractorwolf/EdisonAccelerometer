@@ -1,8 +1,90 @@
 {
   "project": {
-    "projectSettingsVersion": "1.2",
+    "projectSettingsVersion": "2.0.0",
     "currentBuildConfiguration": "Android",
     "projectFiles": {},
-    "projectDirectories": {}
+    "projectDirectories": {},
+    "initialAutoPluginCount": 0
+  },
+  "iot-tab": {
+    "fileStatus": {
+      ".gitattributes": {
+        "previousModTime": 1418965048719,
+        "modified": 1418965048719,
+        "seen": true,
+        "name": ".gitattributes"
+      },
+      ".gitignore": {
+        "previousModTime": 1443243953350,
+        "modified": 1443243953350,
+        "seen": true,
+        "name": ".gitignore"
+      },
+      "EdisonAccelerometer.xdk": {
+        "previousModTime": 1445214003735,
+        "modified": 1445214003735,
+        "seen": true,
+        "name": "EdisonAccelerometer.xdk"
+      },
+      "EdisonAccelerometer.xdke": {
+        "previousModTime": 1445312693772,
+        "modified": 1445312693772,
+        "seen": true,
+        "name": "EdisonAccelerometer.xdke"
+      },
+      "EdisonAccelerometer_1.2.0.xdke_bak": {
+        "previousModTime": 1445214003677,
+        "modified": 1445214003677,
+        "seen": true,
+        "name": "EdisonAccelerometer_1.2.0.xdke_bak"
+      },
+      "EdisonAccelerometer_1.2.0.xdk_bak": {
+        "previousModTime": 1445214003678,
+        "modified": 1445214003678,
+        "seen": true,
+        "name": "EdisonAccelerometer_1.2.0.xdk_bak"
+      },
+      "icon.png": {
+        "previousModTime": 1443228990678,
+        "modified": 1443228990678,
+        "seen": true,
+        "name": "icon.png"
+      },
+      "main.js": {
+        "previousModTime": 1445312846642,
+        "modified": 1445312846642,
+        "seen": true,
+        "name": "main.js"
+      },
+      "package.json": {
+        "previousModTime": 1445300248726,
+        "modified": 1445300248726,
+        "seen": true,
+        "name": "package.json"
+      },
+      "README.md": {
+        "previousModTime": 1443228990679,
+        "modified": 1443228990679,
+        "seen": true,
+        "name": "README.md"
+      },
+      "xdk/project-info.json": {
+        "previousModTime": 1445214003717,
+        "modified": 1445214003717,
+        "seen": true,
+        "name": "xdk/project-info.json"
+      },
+      "models/impactvector.js": {
+        "previousModTime": 1445309727995,
+        "modified": 1445309727995,
+        "seen": true,
+        "name": "models/impactvector.js"
+      }
+    },
+    "boardFileStatus": {
+      "main.js": {
+        "previousModTime": 1445312847599
+      }
+    }
   }
 }

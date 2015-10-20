@@ -11,6 +11,12 @@ var mraa = require('mraa'); //require mraa
 console.log('MRAA Version: ' + mraa.getVersion()); //write the mraa version to the Intel XDK console
 
 
+
+//models
+var ImpactVector = require("./models/impactvector.js").ImpactVector;
+
+
+
 // Instantiate an LSM9DS0 using default parameters (bus 1, gyro addr 6b, xm addr 1d)
 var sensor = new sensorObj.LSM9DS0();
 // Initialize the device with default values
@@ -58,7 +64,45 @@ ConcussionLed.write(0);
 
 var outputTemplate = "CurrentX: %d   \tCurrentY: %d  \tCurrentZ: %d  \tloop: %d \t status: %s-%s-%s \tthreshold: %d \ttime: %s";
 
- 
+
+
+//SOCKET
+
+
+var serverPort = "4242";//server port
+var serverIP = 'http://192.168.1.142';//server host
+
+var socket = require('socket.io-client')(serverIP + ':' + serverPort);
+
+//connection with server successful
+socket.on('connect', function(){
+    console.log('connected to server');
+    socket.emit('message','client ready');
+});
+
+//received message from server
+socket.on('servermessage', function(data){
+  console.log("message received: " + data);
+  
+  socket.emit('message','thank you server');
+  
+  console.log("response sent");
+  
+});
+
+
+
+
+//disconnected from server
+socket.on('disconnect', function(){
+   console.log('disconnected from server');
+});
+
+
+
+
+
+
 
 function intitalizeReadings(){
     sensor.update();
@@ -74,11 +118,32 @@ function intitalizeReadings(){
     
     console.log("INITIALIZED READINGS");
 }
+
 intitalizeReadings();
 
+
+
+
+//REWRITE AS SOCKET.EMIT()
 function sendData(x,y,z,threshold, impactDateTime){
 
+    var ImpactVector = {
+      createDate: impactDateTime,
+      deviceSerialNumber: deviceSerialNumber,
+      measurementX: x,
+      measurementY: y,
+      meausrementZ: z,
+      threshold: threshold
+    };
 
+    console.log("sendData called");
+    
+    
+      socket.emit('clientmessage',ImpactVector);
+    
+        console.log("emit: client message");
+    
+/*
     var data = querystring.stringify({
           deviceSerialNumber:deviceSerialNumber ,
           measurementX: x,
@@ -109,6 +174,8 @@ function sendData(x,y,z,threshold, impactDateTime){
 
     req.write(data);
     req.end();
+    
+    */
 }
 
 
@@ -137,7 +204,7 @@ setInterval(function()
 
     
     //test for concussionjs
-    if(currentX>concussionThreshold||currentY>concussionThreshold||currentZ>concussionThreshold){
+    if(xSurpass||ySurpass||zSurpass){
         
         //log sensor data
         console.log(outputTemplate,currentX,currentY,currentZ,reading_count, xSurpass, ySurpass, zSurpass, concussionThreshold,impactDateTime);
