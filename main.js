@@ -4,16 +4,9 @@
 //Type Node.js Here :)
 
 var sensorObj = require('jsupm_lsm9ds0');
-var querystring = require('querystring');
-var http = require('http');
 
 var mraa = require('mraa'); //require mraa
 console.log('MRAA Version: ' + mraa.getVersion()); //write the mraa version to the Intel XDK console
-
-
-
-//models
-var ImpactVector = require("./models/impactvector.js").ImpactVector;
 
 
 
@@ -65,10 +58,7 @@ ConcussionLed.write(0);
 var outputTemplate = "CurrentX: %d   \tCurrentY: %d  \tCurrentZ: %d  \tloop: %d \t status: %s-%s-%s \tthreshold: %d \ttime: %s";
 
 
-
 //SOCKET
-
-
 var serverPort = "4242";//server port
 var serverIP = 'http://192.168.1.142';//server host
 
@@ -86,22 +76,12 @@ socket.on('servermessage', function(data){
   
   socket.emit('message','thank you server');
   
-  console.log("response sent");
-  
 });
-
-
-
 
 //disconnected from server
 socket.on('disconnect', function(){
    console.log('disconnected from server');
 });
-
-
-
-
-
 
 
 function intitalizeReadings(){
@@ -121,13 +101,10 @@ function intitalizeReadings(){
 
 intitalizeReadings();
 
-
-
-
-//REWRITE AS SOCKET.EMIT()
+//send data to server via socket.io emit (publish)
 function sendData(x,y,z,threshold, impactDateTime){
 
-    var ImpactVector = {
+    var impactVector = {
       createDate: impactDateTime,
       deviceSerialNumber: deviceSerialNumber,
       measurementX: x,
@@ -136,46 +113,9 @@ function sendData(x,y,z,threshold, impactDateTime){
       threshold: threshold
     };
 
-    console.log("sendData called");
+    socket.emit('clientmessage', impactVector);
     
-    
-      socket.emit('clientmessage',ImpactVector);
-    
-        console.log("emit: client message");
-    
-/*
-    var data = querystring.stringify({
-          deviceSerialNumber:deviceSerialNumber ,
-          measurementX: x,
-          measurementY: y,
-          meausrementZ: z,
-          notes: "",
-          threshold: threshold,
-          impactDateTime: impactDateTime
-    });
-
-    var options = {
-        host: '192.168.1.142',
-        port: 4242,
-        path: '/addimpactvector',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': Buffer.byteLength(data)
-        }
-    };
-
-    var req = http.request(options, function(res) {
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            console.log("body: " + chunk);
-        });
-    });
-
-    req.write(data);
-    req.end();
-    
-    */
+    console.log("emit: client message");
 }
 
 
@@ -201,9 +141,7 @@ setInterval(function()
     
     impactDateTime = Date();
     
-
-    
-    //test for concussionjs
+    //test for concussion
     if(xSurpass||ySurpass||zSurpass){
         
         //log sensor data
@@ -233,28 +171,3 @@ process.on('SIGINT', function()
     process.exit(0);
 });
 
-
-//***************************************
-
-
-/*
-
-var mraa = require('mraa'); //require mraa
-console.log('MRAA Version: ' + mraa.getVersion()); //write the mraa version to the Intel XDK console
-
-//var myOnboardLed = new mraa.Gpio(3, false, true); //LED hooked up to digital pin (or built in pin on Galileo Gen1)
-var myOnboardLed = new mraa.Gpio(31); //LED hooked up to digital pin 13 (or built in pin on Intel Galileo Gen2 as well as Intel Edison)
-myOnboardLed.dir(mraa.DIR_OUT); //set the gpio direction to output
-var ledState = true; //Boolean to hold the state of Led
-
-periodicActivity(); //call the periodicActivity function
-
-function periodicActivity()
-{
-  myOnboardLed.write(ledState?1:0); //if ledState is true then write a '1' (high) otherwise write a '0' (low)
-  ledState = !ledState; //invert the ledState
-  setTimeout(periodicActivity,1000); //call the indicated function after 1 second (1000 milliseconds)
-  console.log('blink: ' + ledState);
-}
-
-*/

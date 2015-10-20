@@ -27,8 +27,8 @@
         "name": "EdisonAccelerometer.xdk"
       },
       "EdisonAccelerometer.xdke": {
-        "previousModTime": 1445312693772,
-        "modified": 1445312693772,
+        "previousModTime": 1445313977354,
+        "modified": 1445313977354,
         "seen": true,
         "name": "EdisonAccelerometer.xdke"
       },
@@ -51,8 +51,8 @@
         "name": "icon.png"
       },
       "main.js": {
-        "previousModTime": 1445312846642,
-        "modified": 1445312846642,
+        "previousModTime": 1445314505029,
+        "modified": 1445314505029,
         "seen": true,
         "name": "main.js"
       },
@@ -83,7 +83,7 @@
     },
     "boardFileStatus": {
       "main.js": {
-        "previousModTime": 1445312847599
+        "previousModTime": 1445314505899
       }
     }
   }
